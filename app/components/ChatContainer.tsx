@@ -256,6 +256,11 @@ export function ChatContainer({ user: _user }: ChatContainerProps) {
 
   const showWelcomeScreen = messages.length === 0 && !isLoading;
 
+  // Get the latest assistant message for TTS
+  const latestAssistantMessage = messages
+    .filter(m => m.sender === 'assistant')
+    .slice(-1)[0]?.content || streamingContent;
+
   return (
     <div className="flex-1 flex relative" style={{ backgroundColor: '#fcfaf9' }}>
       {/* Sidebar */}
@@ -327,6 +332,7 @@ export function ChatContainer({ user: _user }: ChatContainerProps) {
                 onSendMessage={handleSendMessage}
                 placeholder="Send a message..."
                 isLoading={isLoading}
+                latestAssistantMessage={latestAssistantMessage}
               />
             </div>
           </div>

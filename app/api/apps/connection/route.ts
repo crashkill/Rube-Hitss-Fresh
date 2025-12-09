@@ -8,16 +8,16 @@ export async function GET(request: NextRequest) {
     // Get authenticated user
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+
     if (authError || !user || !user.email) {
       return NextResponse.json(
-        { error: 'Unauthorized - Please sign in' }, 
+        { error: 'Unauthorized - Please sign in' },
         { status: 401 }
       );
     }
 
     const composio = getComposio();
-    
+
     // Fetch connected accounts for the user
     const connectedAccounts = await composio.connectedAccounts.list({
       userIds: [user.email]
@@ -44,12 +44,12 @@ export async function GET(request: NextRequest) {
         }
       })
     );
-    
+
     return NextResponse.json({ connectedAccounts: detailedAccounts });
   } catch (error) {
     console.error('Error fetching connection status:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch connection status' }, 
+      { error: 'Failed to fetch connection status' },
       { status: 500 }
     );
   }
@@ -57,13 +57,20 @@ export async function GET(request: NextRequest) {
 
 // POST: Create auth link for connecting a toolkit
 export async function POST(request: NextRequest) {
+  const timestamp = () => new Date().toISOString();
+  const log = (msg: string, ...args: any[]) => console.log(`[${timestamp()}] 🔗 CONNECTION:`, msg, ...args);
+  const logError = (msg: string, ...args: any[]) => console.error(`[${timestamp()}] ❌ CONNECTION ERROR:`, msg, ...args);
+
   try {
     const body = await request.json();
-    const { authConfigId, toolkitSlug } = body;
-    
-    if (!authConfigId) {
+    let { authConfigId, toolkitSlug } = body;
+
+    log(`Request received - toolkit: ${toolkitSlug}, authConfigId: ${authConfigId || 'not provided'}`);
+
+    if (!authConfigId && !toolkitSlug) {
+      logError('Missing required parameters');
       return NextResponse.json(
-        { error: 'authConfigId is required' }, 
+        { error: 'Either authConfigId or toolkitSlug is required' },
         { status: 400 }
       );
     }
@@ -71,31 +78,91 @@ export async function POST(request: NextRequest) {
     // Get authenticated user
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+
     if (authError || !user || !user.email) {
       return NextResponse.json(
-        { error: 'Unauthorized - Please sign in' }, 
+        { error: 'Unauthorized - Please sign in' },
         { status: 401 }
       );
     }
 
-    console.log('Creating auth link for user:', user.email, 'toolkit:', toolkitSlug);
-
     const composio = getComposio();
+
+    // If no authConfigId provided, try to find one or create one
+    if (!authConfigId && toolkitSlug) {
+      log(`Searching for existing auth config for ${toolkitSlug}...`);
+
+      // 1. List existing configs to see if we can reuse one
+      // Note: In a real multi-tenant app, you might want specific naming conventions
+      const authConfigs = await composio.authConfigs.list();
+
+      const existingConfig = authConfigs.items.find((config: any) => {
+        // Handle both string and object formats for toolkit
+        const configToolkit = typeof config.toolkit === 'string' ? config.toolkit : config.toolkit?.slug;
+        return configToolkit === toolkitSlug;
+      });
+
+      if (existingConfig) {
+        log(`Found existing auth config: ${existingConfig.id}`);
+        authConfigId = existingConfig.id;
+      } else {
+        log(`No existing auth config found. Creating new one...`);
+        try {
+          // Use toolkitSlug as the argument based on SDK type definition
+          const newConfig = await composio.authConfigs.create(toolkitSlug);
+          log(`Created new auth config: ${newConfig.id}`);
+          authConfigId = newConfig.id;
+        } catch (createError: any) {
+          const errorMessage = createError?.message || String(createError);
+          // Check for "no auth toolkit" error
+          if (errorMessage.includes('no auth toolkit') || (createError?.body && JSON.stringify(createError.body).includes('no auth toolkit'))) {
+            log(`Toolkit ${toolkitSlug} is no-auth type. Skipping auth config.`);
+            authConfigId = toolkitSlug;
+          } else {
+            logError(`Failed to create auth config:`, createError);
+            // Fallback: try object syntax just in case runtime differs from type def
+            try {
+              log('Retrying with object syntax...');
+              const newConfig = await composio.authConfigs.create({
+                handle: toolkitSlug,
+                toolkit: toolkitSlug
+              } as any);
+              log(`Created auth config (fallback): ${newConfig.id}`);
+              authConfigId = newConfig.id;
+            } catch (fallbackError) {
+              logError('Fallback creation also failed:', fallbackError);
+              throw createError;
+            }
+          }
+        }
+      }
+    }
+
+    // If it's a no-auth toolkit (detected above), skip the link creation
+    if (authConfigId === toolkitSlug) {
+      log(`No-auth toolkit detected. Returning success without redirect.`);
+      return NextResponse.json({
+        status: 'success',
+        redirectUrl: null // No redirect needed
+      });
+    }
+
+    log(`Creating auth link - user: ${user.email}, authConfig: ${authConfigId}`);
+
     const connectionRequest = await composio.connectedAccounts.link(
-      user.email, 
-      authConfigId, 
+      user.email,
+      authConfigId,
       {
-        callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/apps`
+        callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/apps`
       }
     );
-    
-    console.log('Auth link created:', connectionRequest);
+
+    log(`Auth link created successfully. Redirect URL: ${connectionRequest.redirectUrl}`);
     return NextResponse.json(connectionRequest);
-  } catch (error) {
-    console.error('Error creating auth link:', error);
+  } catch (error: any) {
+    logError(`FINAL ERROR:`, error?.message || error);
     return NextResponse.json(
-      { error: 'Failed to create auth link' }, 
+      { error: 'Failed to create auth link', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
@@ -106,10 +173,10 @@ export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
     const { accountId } = body;
-    
+
     if (!accountId) {
       return NextResponse.json(
-        { error: 'accountId is required' }, 
+        { error: 'accountId is required' },
         { status: 400 }
       );
     }
@@ -117,10 +184,10 @@ export async function DELETE(request: NextRequest) {
     // Get authenticated user
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+
     if (authError || !user) {
       return NextResponse.json(
-        { error: 'Unauthorized - Please sign in' }, 
+        { error: 'Unauthorized - Please sign in' },
         { status: 401 }
       );
     }
@@ -129,13 +196,13 @@ export async function DELETE(request: NextRequest) {
 
     const composio = getComposio();
     const result = await composio.connectedAccounts.delete(accountId);
-    
+
     console.log('Disconnect result:', result);
     return NextResponse.json({ success: true, result });
   } catch (error) {
     console.error('Error disconnecting account:', error);
     return NextResponse.json(
-      { error: 'Failed to disconnect account' }, 
+      { error: 'Failed to disconnect account' },
       { status: 500 }
     );
   }

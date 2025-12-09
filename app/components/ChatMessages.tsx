@@ -74,10 +74,10 @@ export function ChatMessages({
 
                 {/* Message content */}
                 <div
-                  className={`${
-                    message.sender === 'user' ? 'bg-stone-200 text-black' : 'text-black'
-                  } rounded-lg p-3`}
-                  style={message.sender === 'assistant' ? { backgroundColor: '#fcfaf9' } : {}}
+                  className={`message-bubble ${message.sender === 'user'
+                      ? 'message-bubble-user'
+                      : 'message-bubble-assistant'
+                    } animate-slide-up`}
                 >
                   {message.sender === 'assistant' ? (
                     <MarkdownContent content={message.content} />
@@ -155,18 +155,10 @@ export function ChatMessages({
 
                 {/* Loading indicator - only show if no content yet */}
                 {!streamingContent && streamingToolCalls.length === 0 && (
-                  <div className="rounded-lg p-3" style={{ backgroundColor: '#fcfaf9' }}>
-                    <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div
-                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                        style={{ animationDelay: '0.1s' }}
-                      ></div>
-                      <div
-                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                        style={{ animationDelay: '0.2s' }}
-                      ></div>
-                    </div>
+                  <div className="rube-loading">
+                    <div className="rube-loading-dot"></div>
+                    <div className="rube-loading-dot"></div>
+                    <div className="rube-loading-dot"></div>
                   </div>
                 )}
               </div>

@@ -6,6 +6,7 @@ import { RubeGraphic } from './components/RubeGraphic';
 import { Navigation } from './components/Navigation';
 import { ChatPage } from './components/ChatPageWithAuth';
 import { AppsPage } from './components/AppsPageWithAuth';
+import { ScheduledTasksPage } from './components/ScheduledTasksPage';
 import { AuthWrapper } from './components/AuthWrapper';
 import { UserMenu } from './components/UserMenu';
 
@@ -15,7 +16,7 @@ function HomeContent() {
 
   useEffect(() => {
     const tab = searchParams.get('tab')
-    if (tab && ['chat', 'apps'].includes(tab)) {
+    if (tab && ['chat', 'apps', 'scheduled'].includes(tab)) {
       setActiveTab(tab)
     }
   }, [searchParams])
@@ -26,6 +27,8 @@ function HomeContent() {
         return <ChatPage />;
       case 'apps':
         return <AppsPage />;
+      case 'scheduled':
+        return <ScheduledTasksPage />;
       default:
         return <ChatPage />;
     }

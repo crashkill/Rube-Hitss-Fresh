@@ -390,3 +390,292 @@ body {
   margin-top: 0.2857143em;
   margin-bottom: 0.2857143em;
 }
+
+/* ============================================
+   RUBE COMMERCIAL DESIGN SYSTEM
+   ============================================ */
+
+/* Premium Button Styles */
+.btn-primary {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: white;
+  border: none;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.25);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);
+}
+
+.btn-secondary {
+  background: white;
+  color: #374151;
+  border: 1px solid #e5e0df;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+/* Message Bubble Styles - Rube Commercial */
+.message-bubble {
+  padding: 0.875rem 1rem;
+  border-radius: 1.25rem;
+  max-width: 80%;
+  word-wrap: break-word;
+  line-height: 1.5;
+}
+
+.message-bubble-user {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: white;
+  border-bottom-right-radius: 0.25rem;
+  margin-left: auto;
+}
+
+.message-bubble-assistant {
+  background: #f6f4f2;
+  color: #1f2937;
+  border-bottom-left-radius: 0.25rem;
+}
+
+/* Card Styles */
+.rube-card {
+  background: white;
+  border: 1px solid #e5e0df;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.rube-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* App Card Grid */
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.app-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.25rem;
+  background: white;
+  border: 1px solid #e5e0df;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.app-card:hover {
+  border-color: #f97316;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.1);
+  transform: translateY(-2px);
+}
+
+.app-card-connected {
+  border-color: #10b981;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+}
+
+/* Header Styles */
+.rube-header {
+  background: white;
+  border-bottom: 1px solid #e5e0df;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+/* Navigation Tab Styles */
+.nav-tab {
+  padding: 0.75rem 0.25rem;
+  border-bottom: 2px solid transparent;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #6b7280;
+  transition: all 0.15s ease;
+}
+
+.nav-tab:hover {
+  color: #374151;
+  border-bottom-color: #d1d5db;
+}
+
+.nav-tab-active {
+  color: #1f2937;
+  border-bottom-color: #1f2937;
+  font-weight: 600;
+}
+
+/* Sidebar Styles */
+.rube-sidebar {
+  background: #fafaf9;
+  border-right: 1px solid #e5e0df;
+}
+
+/* Loading Animation */
+.rube-loading {
+  display: flex;
+  gap: 0.25rem;
+  padding: 1rem;
+}
+
+.rube-loading-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: #f97316;
+  border-radius: 9999px;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.rube-loading-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.rube-loading-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+/* Tooltip */
+.rube-tooltip {
+  position: relative;
+}
+
+.rube-tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.375rem 0.75rem;
+  background: #1f2937;
+  color: white;
+  font-size: 0.75rem;
+  border-radius: 0.375rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  margin-bottom: 0.5rem;
+}
+
+.rube-tooltip:hover::after {
+  opacity: 1;
+}
+
+/* Badge Styles */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+}
+
+.badge-success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge-warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.badge-info {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+/* Scrollbar Styles (Rube Commercial) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c9c6c5;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a3a09f;
+}
+
+/* Focus States */
+.rube-focus:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #f97316;
+}
+
+/* Glass Effect */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
