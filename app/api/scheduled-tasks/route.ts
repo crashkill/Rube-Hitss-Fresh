@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/app/utils/supabase/server';
 
-// Type definitions
-interface ScheduledTask {
+// Type definition for scheduled task responses
+type ScheduledTask = {
     id: string;
     user_id: string;
     name: string;
@@ -37,7 +37,7 @@ function calculateNextRun(cronExpression: string): Date {
 }
 
 // GET: List all scheduled tasks for the authenticated user
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         const supabase = await createClient();
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        return NextResponse.json({ tasks: tasks || [] });
+        return NextResponse.json({ tasks: (tasks || []) as ScheduledTask[] });
     } catch (error) {
         console.error('Error in GET /api/scheduled-tasks:', error);
         return NextResponse.json(
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
         let nextRunAt: Date;
         try {
             nextRunAt = calculateNextRun(cronExpression);
-        } catch (e) {
+        } catch (_e) {
             return NextResponse.json(
                 { error: 'Invalid cron expression' },
                 { status: 400 }
@@ -161,7 +161,7 @@ export async function PATCH(request: NextRequest) {
             );
         }
 
-        const updates: any = {};
+        const updates: Record<string, unknown> = {};
         if (name !== undefined) updates.name = name;
         if (description !== undefined) updates.description = description;
         if (toolkits !== undefined) updates.toolkits = toolkits;
@@ -171,7 +171,7 @@ export async function PATCH(request: NextRequest) {
             updates.cron_expression = cronExpression;
             try {
                 updates.next_run_at = calculateNextRun(cronExpression).toISOString();
-            } catch (e) {
+            } catch (_e) {
                 return NextResponse.json(
                     { error: 'Invalid cron expression' },
                     { status: 400 }

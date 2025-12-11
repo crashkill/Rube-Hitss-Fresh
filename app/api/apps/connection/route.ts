@@ -2,8 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/app/utils/supabase/server';
 import { getComposio } from '../../../utils/composio';
 
+// Define interfaces for Composio API response types
+interface AuthConfig {
+  id: string;
+  toolkit: string | { slug: string };
+}
+
+interface ComposioError extends Error {
+  body?: Record<string, unknown>;
+}
+
 // GET: Check connection status for all toolkits for authenticated user
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Get authenticated user
     const supabase = await createClient();
@@ -58,12 +68,13 @@ export async function GET(request: NextRequest) {
 // POST: Create auth link for connecting a toolkit
 export async function POST(request: NextRequest) {
   const timestamp = () => new Date().toISOString();
-  const log = (msg: string, ...args: any[]) => console.log(`[${timestamp()}] 🔗 CONNECTION:`, msg, ...args);
-  const logError = (msg: string, ...args: any[]) => console.error(`[${timestamp()}] ❌ CONNECTION ERROR:`, msg, ...args);
+  const log = (msg: string, ...args: unknown[]) => console.log(`[${timestamp()}] 🔗 CONNECTION:`, msg, ...args);
+  const logError = (msg: string, ...args: unknown[]) => console.error(`[${timestamp()}] ❌ CONNECTION ERROR:`, msg, ...args);
 
   try {
     const body = await request.json();
-    let { authConfigId, toolkitSlug } = body;
+    let authConfigId = body.authConfigId;
+    const toolkitSlug = body.toolkitSlug;
 
     log(`Request received - toolkit: ${toolkitSlug}, authConfigId: ${authConfigId || 'not provided'}`);
 
@@ -96,7 +107,7 @@ export async function POST(request: NextRequest) {
       // Note: In a real multi-tenant app, you might want specific naming conventions
       const authConfigs = await composio.authConfigs.list();
 
-      const existingConfig = authConfigs.items.find((config: any) => {
+      const existingConfig = authConfigs.items.find((config: AuthConfig) => {
         // Handle both string and object formats for toolkit
         const configToolkit = typeof config.toolkit === 'string' ? config.toolkit : config.toolkit?.slug;
         return configToolkit === toolkitSlug;
@@ -112,10 +123,11 @@ export async function POST(request: NextRequest) {
           const newConfig = await composio.authConfigs.create(toolkitSlug);
           log(`Created new auth config: ${newConfig.id}`);
           authConfigId = newConfig.id;
-        } catch (createError: any) {
-          const errorMessage = createError?.message || String(createError);
+        } catch (createError) {
+          const err = createError as ComposioError;
+          const errorMessage = err?.message || String(createError);
           // Check for "no auth toolkit" error
-          if (errorMessage.includes('no auth toolkit') || (createError?.body && JSON.stringify(createError.body).includes('no auth toolkit'))) {
+          if (errorMessage.includes('no auth toolkit') || (err?.body && JSON.stringify(err.body).includes('no auth toolkit'))) {
             log(`Toolkit ${toolkitSlug} is no-auth type. Skipping auth config.`);
             authConfigId = toolkitSlug;
           } else {
@@ -126,7 +138,7 @@ export async function POST(request: NextRequest) {
               const newConfig = await composio.authConfigs.create({
                 handle: toolkitSlug,
                 toolkit: toolkitSlug
-              } as any);
+              } as unknown as string);
               log(`Created auth config (fallback): ${newConfig.id}`);
               authConfigId = newConfig.id;
             } catch (fallbackError) {
@@ -159,8 +171,8 @@ export async function POST(request: NextRequest) {
 
     log(`Auth link created successfully. Redirect URL: ${connectionRequest.redirectUrl}`);
     return NextResponse.json(connectionRequest);
-  } catch (error: any) {
-    logError(`FINAL ERROR:`, error?.message || error);
+  } catch (error) {
+    logError(`FINAL ERROR:`, error instanceof Error ? error.message : String(error));
     return NextResponse.json(
       { error: 'Failed to create auth link', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }

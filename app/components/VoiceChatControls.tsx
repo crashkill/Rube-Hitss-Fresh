@@ -13,10 +13,12 @@ interface VoiceChatControlsProps {
 
 export function VoiceChatControls({
     onVoiceInput,
-    onSpeakMessage,
+    onSpeakMessage: _onSpeakMessage,
     latestAssistantMessage,
     isProcessing = false,
 }: VoiceChatControlsProps) {
+    // Silence unused variable warning - kept for future external-speak-button functionality
+    void _onSpeakMessage;
     const [autoSpeak, setAutoSpeak] = useState(true);
     const [showSettings, setShowSettings] = useState(false);
 
@@ -93,8 +95,8 @@ export function VoiceChatControls({
                         onClick={handleMicToggle}
                         disabled={isProcessing}
                         className={`relative p-3 rounded-full transition-all duration-200 ${isListening
-                                ? 'bg-red-500 text-white animate-pulse shadow-lg shadow-red-500/50'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            ? 'bg-red-500 text-white animate-pulse shadow-lg shadow-red-500/50'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
                         title={isListening ? 'Stop listening' : 'Start voice input'}
                     >
@@ -124,8 +126,8 @@ export function VoiceChatControls({
                         onClick={handleSpeakToggle}
                         disabled={!latestAssistantMessage}
                         className={`p-3 rounded-full transition-all duration-200 ${isSpeaking
-                                ? 'bg-orange-500 text-white'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            ? 'bg-orange-500 text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             } ${!latestAssistantMessage ? 'opacity-50 cursor-not-allowed' : ''}`}
                         title={isSpeaking ? 'Stop speaking' : 'Speak last message'}
                     >
@@ -146,8 +148,8 @@ export function VoiceChatControls({
                 <button
                     onClick={() => setShowSettings(!showSettings)}
                     className={`p-3 rounded-full transition-all duration-200 ${showSettings
-                            ? 'bg-purple-500 text-white'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-purple-500 text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                     title="Voice settings"
                 >
@@ -161,8 +163,8 @@ export function VoiceChatControls({
                 <button
                     onClick={() => setAutoSpeak(!autoSpeak)}
                     className={`p-2 rounded-lg text-xs font-medium transition-all duration-200 ${autoSpeak
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-gray-100 text-gray-500'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-gray-100 text-gray-500'
                         }`}
                     title={autoSpeak ? 'Auto-speak enabled' : 'Auto-speak disabled'}
                 >
